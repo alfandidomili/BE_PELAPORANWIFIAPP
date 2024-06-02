@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserRole {
+  idUserRoles   Int      @id @default(autoincrement()) // Kolom ID (primary key) dengan tipe Int dan otomatis bertambah
+  idName        String   @db.VarChar(50)     
+  user          User[]          // Kolom id_name dengan tipe String dan panjang maksimum 50 karakter
+}
+
+model User {
+  idUsers       Int      @id @default(autoincrement()) // Kolom ID (primary key) dengan tipe Int dan otomatis bertambah
+  usernameId    String   @unique                       // Kolom username_id dengan tipe String dan harus unik
+  nama          String                                // Kolom nama dengan tipe String
+  idUserRoles   Int     
+  password      String
+
+  // Relasi dengan tabel UserRole (user_roles)
+  userRole      UserRole @relation(fields: [idUserRoles], references: [idUserRoles], onDelete: Cascade)
+  Order         Order[]
+  Eviden        Eviden[]
+}
+
+model StatusOrder {
+  idStatusOrder Int       @id @default(autoincrement()) // Kolom ID (primary key) dengan tipe Int dan otomatis bertambah
+  statusName    String  
+  statusOrder   Order[]    
+  eviden        Eviden[]                              // Kolom statusName dengan tipe String
+}
+
+model CategoryService {
+  idService     Int       @id @default(autoincrement()) // Kolom ID (primary key) dengan tipe Int dan otomatis bertambah
+  serviceName   String    
+  service       Order[]  
+  eviden        Eviden[]                              // Kolom serviceName dengan tipe String
+}
+
+model Order {
+  idOrder       Int       @id @default(autoincrement()) // Kolom ID (primary key) dengan tipe Int dan otomatis bertambah
+  idTiket       String    @unique                         // Kolom id_tiket dengan tipe String dan harus unik
+  idUsers       Int       // Kolom id_users dengan tipe Int untuk referensi ke tabel User
+  idService     Int       // Kolom id_service dengan tipe Int untuk referensi ke tabel CategoryService
+  waktuOrder    DateTime            // Kolom waktu_order dengan tipe DateTime, tidak boleh null, dan nilai default adalah waktu saat ini
+  noted         String?                                // Kolom noted dengan tipe String (opsional)
+  idStatusOrder Int       // Kolom id_status_order dengan tipe Int untuk referensi ke tabel StatusOrder
+  eviden        Eviden?
+  // Relasi dengan tabel User
+  user          User      @relation(fields: [idUsers], references: [idUsers], onDelete: Cascade)
+
+  // Relasi dengan tabel CategoryService
+  service       CategoryService @relation(fields: [idService], references: [idService], onDelete: Cascade)
+
+  // Relasi dengan tabel StatusOrder
+  statusOrder   StatusOrder @relation(fields: [idStatusOrder], references: [idStatusOrder], onDelete: Cascade)
+}
+
+model StatusEviden {
+  idStatusEvidence     Int       @id @default(autoincrement()) // Kolom ID (primary key) dengan tipe Int dan otomatis bertambah
+  evidenceName   String    
+  eviden        Eviden[]                              // Kolom serviceName dengan tipe String
+}
+
+model Eviden {
+  idEviden       Int       @id @default(autoincrement()) // Kolom ID (primary key) dengan tipe Int dan otomatis bertambah
+  idTiket       Int    @unique                         // Kolom id_tiket dengan tipe String dan harus unik
+  idUsers       Int       // Kolom id_users dengan tipe Int untuk referensi ke tabel User
+  idService     Int       // Kolom id_service dengan tipe Int untuk referensi ke tabel CategoryService
+  waktuEviden   DateTime            // Kolom waktu_order dengan tipe DateTime, tidak boleh null, dan nilai default adalah waktu saat ini
+  notedEviden   String?                                // Kolom noted dengan tipe String (opsional)
+  idStatusOrder Int 
+  idStatusEvidence Int      // Kolom id_status_order dengan tipe Int untuk referensi ke tabel StatusOrder
+  // Relasi dengan tabel User
+  user          User      @relation(fields: [idUsers], references: [idUsers], onDelete: Cascade)
+
+  // Relasi dengan tabel CategoryService
+  service       CategoryService @relation(fields: [idService], references: [idService], onDelete: Cascade)
+
+  // Relasi dengan tabel StatusOrder
+  statusOrder   StatusOrder @relation(fields: [idStatusOrder], references: [idStatusOrder], onDelete: Cascade)
+
+  statusEviden  StatusEviden @relation(fields: [idStatusEvidence], references: [idStatusEvidence], onDelete: Cascade)
+
+  order  Order @relation(fields: [idTiket], references: [idOrder], onDelete: Cascade)
+}
+
